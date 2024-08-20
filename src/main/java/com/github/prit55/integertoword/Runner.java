@@ -58,9 +58,8 @@ public class Runner {
 	private static final String NEGATIVE = "Negative";
 	
 	private static final String HUNDRED = "Hundred";
-	private static final String THOUSAND = "Thousand";
-	private static final String MILLION = "Million";
-	private static final String BILLION = "Billion";
+	
+	private static final String[] THOUSANDS = {"", "Thousand", "Million", "Billion"};
 
 	public static void main(String[] args) {
 		int n = 2147083648;
@@ -70,76 +69,45 @@ public class Runner {
 	}
 	
 	public static String integerToWord(int n) {
-		String result = "";
 		if (n == 0)
 			return ZERO;
 		
-		else if (n < 0) {
-			result += NEGATIVE + " ";
-			n *= -1;
-		}
+		else if (n < 0)
+			return NEGATIVE + " " + integerToWord(-n);
 		
-		return result + integerToWordRecursive(n).trim();
+		StringBuilder result = new StringBuilder();
+        int thousandCounter = 0;
+        
+        while (n > 0) {
+            if (n % 1000 != 0) {
+                result.insert(0, integerToWordUnderThousand(n % 1000) + " " + THOUSANDS[thousandCounter] + " ");
+            }
+            n /= 1000;
+            
+            ++thousandCounter;
+        }
+        
+        return result.toString().trim();
 	}
 	
-	private static String integerToWordRecursive(int n) {
-		if (numberUnderTwentyMap.containsKey(n))
-			return numberUnderTwentyMap.get(n);
-		
-		String nS = Integer.toString(n);
-		
-		// Skip the 0s in front
-		if (Integer.valueOf(nS.substring(0, 1)) == 0) {
-			return integerToWordRecursive(Integer.valueOf(nS.substring(1)));
-		}
-		
-		int nLenght = nS.length();
-		
-		if (nLenght == 2)
-			return numberTensMap.get(Integer.valueOf(nS.substring(0, 1))) + " " 
-				+ integerToWordRecursive(Integer.valueOf(nS.substring(1))) + " " ;	
-		
-		if (nLenght == 3)
-			return numberUnderTwentyMap.get(Integer.valueOf(nS.substring(0, 1))) + " " 
-				+ HUNDRED + " "
-				+ integerToWordRecursive(Integer.valueOf(nS.substring(1))) + " " ;
-		
-		if (nLenght == 4)
-			return numberUnderTwentyMap.get(Integer.valueOf(nS.substring(0, 1))) + " " 
-				+ THOUSAND + " "
-				+ integerToWordRecursive(Integer.valueOf(nS.substring(1))) + " " ;
-		
-		if (nLenght == 5)
-			return integerToWordRecursive(Integer.valueOf(nS.substring(0, 2)))
-				+ THOUSAND + " "
-				+ integerToWordRecursive(Integer.valueOf(nS.substring(2))) + " " ;
-		
-		if (nLenght == 6)
-			return integerToWordRecursive(Integer.valueOf(nS.substring(0, 3)))
-				+ THOUSAND + " "
-				+ integerToWordRecursive(Integer.valueOf(nS.substring(3))) + " " ;
-		
-		if (nLenght == 7)
-			return numberUnderTwentyMap.get(Integer.valueOf(nS.substring(0, 1))) + " " 
-				+ MILLION + " "
-				+ integerToWordRecursive(Integer.valueOf(nS.substring(1))) + " " ;
-		
-		if (nLenght == 8)
-			return integerToWordRecursive(Integer.valueOf(nS.substring(0, 2)))
-				+ MILLION + " "
-				+ integerToWordRecursive(Integer.valueOf(nS.substring(2))) + " " ;
-		
-		if (nLenght == 9)
-			return integerToWordRecursive(Integer.valueOf(nS.substring(0, 3))).trim() + " "
-				+ MILLION + " "
-				+ integerToWordRecursive(Integer.valueOf(nS.substring(3))) + " " ;
-		
-		if (nLenght == 10)
-			return numberUnderTwentyMap.get(Integer.valueOf(nS.substring(0, 1))) + " " 
-				+ BILLION + " "
-				+ integerToWordRecursive(Integer.valueOf(nS.substring(1)));
-		
-		return "";
-	}
+	private static String integerToWordUnderThousand(int n) {
+        StringBuilder result = new StringBuilder();
+        
+        if (n >= 100) {
+            result.append(numberUnderTwentyMap.get(n / 100)).append(" ").append(HUNDRED).append(" ");
+            n %= 100;
+        }
+        
+        if (n >= 20) {
+            result.append(numberTensMap.get(n / 10)).append(" ");
+            n %= 10;
+        }
+        
+        if (n > 0) {
+            result.append(numberUnderTwentyMap.get(n)).append(" ");
+        }
+        
+        return result.toString().trim();
+    }
 
 }
